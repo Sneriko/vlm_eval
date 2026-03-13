@@ -23,12 +23,15 @@ class EvalRow:
 
 
 def find_samples(dataset_dir: Path, image_extensions: list[str], pagexml_extension: str):
-    xml_files = sorted(dataset_dir.glob(f"*{pagexml_extension}"))
+    xml_files = sorted(dataset_dir.rglob(f"*{pagexml_extension}"))
     for xml_path in xml_files:
+        if xml_path.parent.name != "page":
+            continue
         stem = xml_path.stem
         image_path = None
+        archive_dir = xml_path.parent.parent
         for ext in image_extensions:
-            candidate = dataset_dir / f"{stem}{ext}"
+            candidate = archive_dir / f"{stem}{ext}"
             if candidate.exists():
                 image_path = candidate
                 break

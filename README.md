@@ -31,14 +31,20 @@ pip install -e .[dev]
 
 ## Dataset layout
 
-The evaluator matches files by stem:
+The evaluator matches files by stem between archive-level images and PAGE XMLs found in a `page/` subfolder. XML files in sibling folders (such as `alto/`) are ignored.
 
 ```text
 data/
-  page_0001.jpg
-  page_0001.xml
-  page_0002.tif
-  page_0002.xml
+  archive_1/
+    page_0001.jpg
+    page/
+      page_0001.xml
+    alto/
+      page_0001.xml  # ignored
+  archive_2/
+    page_0002.tif
+    page/
+      page_0002.xml
 ```
 
 ## Configure models
