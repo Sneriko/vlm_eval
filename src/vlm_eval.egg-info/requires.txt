@@ -1,0 +1,8 @@
+requests>=2.31.0
+pydantic>=2.6.0
+PyYAML>=6.0.1
+click>=8.1.7
+google-genai
+
+[dev]
+pytest>=8.0.0

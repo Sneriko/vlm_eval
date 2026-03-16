@@ -1,0 +1,2 @@
+[console_scripts]
+vlm-eval = vlm_eval.cli:cli

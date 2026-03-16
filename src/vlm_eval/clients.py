@@ -5,7 +5,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
+from google import genai
+from google.genai import types
 from .config import ModelConfig
 
 
@@ -128,6 +129,19 @@ class GeminiClient:
     temperature: float = 0.0
 
     def transcribe(self, image_path: str, prompt: str) -> str:
+        client = genai.Client()
+
+        response = client.models.generate_content(
+            model=self.model,
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                temperature=0.0
+            )
+        )
+
+        return response.text
+        
+        """
         import requests
 
         response = requests.post(
@@ -164,6 +178,7 @@ class GeminiClient:
         parts: list[dict[str, str]] = candidates[0].get("content", {}).get("parts", [])
         texts = [part.get("text", "").strip() for part in parts if part.get("text")]
         return "\n".join(text for text in texts if text)
+        """
 
 
 @dataclass

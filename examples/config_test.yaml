@@ -1,0 +1,16 @@
+output_csv: /home/dgxuser/erik/projects/vlm_eval/data
+dataset_dir: /home/dgxuser/erik/data/quality_prediction/data/GT_test_jan_26/images_page
+image_extensions: [".jpg", ".png", ".tif"]
+pagexml_extension: .xml
+prompt: >
+  Transcribe this historical Swedish handwritten page as accurately as possible.
+  Keep spelling and line breaks when possible. Return only plain transcription text.
+output_csv: ./outputs/results.csv
+models:
+  - name: gemini-3-flash-preview
+    provider: gemini
+    model: gemini-3-flash-preview
+    api_key_env: GEMINI_API_KEY
+    base_url: https://generativelanguage.googleapis.com/v1beta
+    max_tokens: 2048
+    temperature: 0
