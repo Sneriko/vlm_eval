@@ -17,7 +17,7 @@ def cli():
 @click.option("--config", "config_path", type=click.Path(exists=True, dir_okay=False), required=True)
 def run_eval(config_path: str):
     cfg = load_config(config_path)
-    rows = evaluate(cfg)
+    rows = evaluate(cfg, progress_logger=click.echo)
     save_csv(rows, cfg.output_csv)
     click.echo(f"Saved {len(rows)} rows to {cfg.output_csv}")
     click.echo(json.dumps(summarize(rows), indent=2, ensure_ascii=False))

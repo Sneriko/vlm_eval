@@ -72,8 +72,9 @@ vlm-eval run --config config.yaml
 ```
 
 Outputs:
-- CSV at `output_csv` path (row-level results)
-- JSON summary printed to stdout (mean precision/recall/F1 by model)
+- Progress lines to stdout for each page and each folder (precision/recall/F1 by model)
+- CSV at `output_csv` path including page-level, folder-level, and entire-testset rows (`level`/`scope_id`)
+- JSON summary printed to stdout (entire-testset precision/recall/F1 by model)
 
 ## Notes on PAGE XML parsing
 
