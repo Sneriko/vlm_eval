@@ -8,6 +8,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 from .config import ModelConfig
+import mimetypes
 
 
 def _image_to_data_url(image_path: str) -> str:
@@ -125,20 +126,37 @@ class GeminiClient:
     model: str
     api_key: str
     base_url: str = "https://generativelanguage.googleapis.com/v1beta"
-    max_tokens: int = 1024
+    max_tokens: int = 2048
     temperature: float = 0.0
 
     def transcribe(self, image_path: str, prompt: str) -> str:
-        client = genai.Client()
+        print(image_path)
+
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if mime_type is None:
+            raise ValueError(f"Could not determine MIME type for: {image_path}")
+
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+
+        client = genai.Client(api_key=self.api_key)
 
         response = client.models.generate_content(
             model=self.model,
-            contents=[prompt],
+            contents=[
+                prompt,
+                types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=mime_type,
+                ),
+            ],
             config=types.GenerateContentConfig(
-                temperature=0.0
-            )
+                temperature=self.temperature,
+                max_output_tokens=self.max_tokens,
+            ),
         )
 
+        print(response.text + "\n")
         return response.text
         
         """
