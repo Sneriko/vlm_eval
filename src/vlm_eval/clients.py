@@ -153,6 +153,9 @@ class GeminiClient:
             config=types.GenerateContentConfig(
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
+                thinking_config=types.ThinkingConfig(
+                    thinking_level="minimal"
+                ),
             ),
         )
 
