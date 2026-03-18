@@ -140,12 +140,37 @@ def evaluate(config: EvalConfig, progress_logger: Callable[[str], None] | None =
 def save_csv(rows: list[EvalRow], output_path: Path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(asdict(rows[0]).keys()) if rows else [
-            "level", "scope_id", "image_path", "xml_path", "model", "bow_precision", "bow_recall", "bow_f1", "prediction", "reference"
-        ])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=list(asdict(rows[0]).keys()) if rows else [
+                "level", "scope_id", "image_path", "xml_path", "model", "bow_precision", "bow_recall", "bow_f1", "prediction", "reference"
+            ],
+        )
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))
+
+
+def _slugify_model_name(model_name: str) -> str:
+    slug = "".join(char.lower() if char.isalnum() else "-" for char in model_name)
+    slug = "-".join(part for part in slug.split("-") if part)
+    return slug or "model"
+
+
+def save_csv_per_model(rows: list[EvalRow], output_path: Path) -> dict[str, Path]:
+    grouped_rows: dict[str, list[EvalRow]] = {}
+    for row in rows:
+        grouped_rows.setdefault(row.model, []).append(row)
+
+    saved_paths: dict[str, Path] = {}
+    for model_name in sorted(grouped_rows):
+        model_output_path = output_path.with_name(
+            f"{output_path.stem}_{_slugify_model_name(model_name)}{output_path.suffix or '.csv'}"
+        )
+        save_csv(grouped_rows[model_name], model_output_path)
+        saved_paths[model_name] = model_output_path
+
+    return saved_paths
 
 
 def summarize(rows: list[EvalRow]) -> dict[str, dict[str, float]]:

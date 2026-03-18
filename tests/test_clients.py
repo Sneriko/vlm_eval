@@ -1,4 +1,4 @@
-from vlm_eval.clients import DeepSeekClient, GeminiClient, build_client
+from vlm_eval.clients import AnthropicClient, DeepSeekClient, GeminiClient, OpenAICompatibleClient, build_client
 from vlm_eval.config import ModelConfig
 
 
@@ -15,6 +15,36 @@ def test_build_client_gemini(monkeypatch):
 
     assert isinstance(client, GeminiClient)
     assert client.base_url == "https://generativelanguage.googleapis.com/v1beta"
+
+
+def test_build_client_openai(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    cfg = ModelConfig(
+        name="openai",
+        provider="openai_compatible",
+        model="gpt-4.1-mini",
+        api_key_env="OPENAI_API_KEY",
+    )
+
+    client = build_client(cfg)
+
+    assert isinstance(client, OpenAICompatibleClient)
+    assert client.base_url == "https://api.openai.com/v1"
+
+
+def test_build_client_anthropic(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    cfg = ModelConfig(
+        name="anthropic",
+        provider="anthropic",
+        model="claude-3-5-sonnet-latest",
+        api_key_env="ANTHROPIC_API_KEY",
+    )
+
+    client = build_client(cfg)
+
+    assert isinstance(client, AnthropicClient)
+    assert client.base_url == "https://api.anthropic.com"
 
 
 def test_build_client_deepseek(monkeypatch):
