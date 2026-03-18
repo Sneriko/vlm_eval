@@ -1,14 +1,14 @@
-dataset_dir: /home/sneriko/projects/vlm_eval/data/one_image_test
+dataset_dir: /home/dgxuser/erik/data/quality_prediction/data/testsuite/images_page
 image_extensions: [".jpg", ".png", ".tif"]
 pagexml_extension: .xml
 prompt: >
   Transcribe this historical Swedish handwritten page as accurately as possible.
   Keep spelling and line breaks when possible. Return only plain transcription text.
-output_csv: ./output/results.csv
+output_csv: ./outputs/results.csv
 models:
-  - name: gemini-3-flash-preview
+  - name: gemini-3.1-pro-preview
     provider: gemini
-    model: gemini-3-flash-preview
+    model: gemini-3.1-pro-preview
     api_key_env: GEMINI_API_KEY
     base_url: https://generativelanguage.googleapis.com/v1beta
     max_tokens: 65536

@@ -154,12 +154,10 @@ class GeminiClient:
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
                 thinking_config=types.ThinkingConfig(
-                    thinking_level="minimal"
+                    thinking_level="low"
                 ),
             ),
         )
-
-        print(response.text + "\n")
         return response.text
         
         """
