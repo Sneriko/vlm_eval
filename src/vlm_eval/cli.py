@@ -5,7 +5,7 @@ import json
 import click
 
 from .config import load_config
-from .evaluator import evaluate, save_csv, summarize
+from .evaluator import evaluate, save_csv_per_model, summarize
 
 
 @click.group()
@@ -18,8 +18,10 @@ def cli():
 def run_eval(config_path: str):
     cfg = load_config(config_path)
     rows = evaluate(cfg, progress_logger=click.echo)
-    save_csv(rows, cfg.output_csv)
-    click.echo(f"Saved {len(rows)} rows to {cfg.output_csv}")
+    output_paths = save_csv_per_model(rows, cfg.output_csv)
+    for model_name, output_path in output_paths.items():
+        row_count = sum(1 for row in rows if row.model == model_name)
+        click.echo(f"Saved {row_count} rows for {model_name} to {output_path}")
     click.echo(json.dumps(summarize(rows), indent=2, ensure_ascii=False))
 
 

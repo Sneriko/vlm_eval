@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from vlm_eval.config import EvalConfig, ModelConfig
-from vlm_eval.evaluator import evaluate, find_samples, summarize
+from vlm_eval.evaluator import EvalRow, evaluate, find_samples, save_csv_per_model, summarize
 
 
 def test_find_samples_only_pairs_pagexml_with_archive_image(tmp_path: Path):
@@ -115,3 +115,40 @@ def test_summarize_prefers_testset_rows():
     assert summary["m"]["bow_precision"] == 0.8
     assert summary["m"]["bow_recall"] == 0.7
     assert summary["m"]["bow_f1"] == 0.75
+
+
+def test_save_csv_per_model_writes_one_file_per_model(tmp_path: Path):
+    rows = [
+        EvalRow(
+            level="page",
+            scope_id="a",
+            image_path="img",
+            xml_path="xml",
+            model="Model A",
+            bow_precision=1.0,
+            bow_recall=1.0,
+            bow_f1=1.0,
+            prediction="pred",
+            reference="ref",
+        ),
+        EvalRow(
+            level="page",
+            scope_id="b",
+            image_path="img",
+            xml_path="xml",
+            model="Model/B",
+            bow_precision=0.5,
+            bow_recall=0.5,
+            bow_f1=0.5,
+            prediction="pred",
+            reference="ref",
+        ),
+    ]
+
+    paths = save_csv_per_model(rows, tmp_path / "results.csv")
+
+    assert set(paths) == {"Model A", "Model/B"}
+    assert paths["Model A"].name == "results_model-a.csv"
+    assert paths["Model/B"].name == "results_model-b.csv"
+    assert paths["Model A"].read_text(encoding="utf-8").count("\n") == 2
+    assert paths["Model/B"].read_text(encoding="utf-8").count("\n") == 2

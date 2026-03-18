@@ -13,7 +13,7 @@ Evaluation metrics implemented:
 
 ## Why this architecture
 
-This implementation uses lightweight API clients (`requests`) instead of LangChain. That keeps the evaluation path transparent and easy to adapt to many providers. Any model endpoint that is OpenAI-compatible can be evaluated with the same client.
+This implementation uses provider SDKs directly for OpenAI-compatible endpoints, Anthropic, Gemini, and DeepSeek rather than an abstraction layer like LangChain. That keeps the evaluation path transparent while still using the vendors' maintained clients.
 
 Supported providers out of the box:
 - `openai_compatible` (OpenAI and compatible hosted/self-hosted APIs)
@@ -73,7 +73,7 @@ vlm-eval run --config config.yaml
 
 Outputs:
 - Progress lines to stdout for each page and each folder (precision/recall/F1 by model)
-- CSV at `output_csv` path including page-level, folder-level, and entire-testset rows (`level`/`scope_id`)
+- One CSV per configured model, derived from `output_csv` (for example `results_gpt-4-1-mini.csv`), each including page-level, folder-level, and entire-testset rows (`level`/`scope_id`)
 - JSON summary printed to stdout (entire-testset precision/recall/F1 by model)
 
 ## Notes on PAGE XML parsing
