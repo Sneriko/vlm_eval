@@ -1,0 +1,15 @@
+dataset_dir: /home/dgxuser/erik/data/quality_prediction/data/testsuite/images_page
+image_extensions: [".jpg", ".png", ".tif"]
+pagexml_extension: .xml
+prompt: >
+  Transcribe this historical Swedish handwritten page as accurately as possible.
+  Keep spelling and line breaks when possible. Return only plain transcription text.
+output_csv: ./outputs/results.csv
+models:
+  - name: claude-sonnet
+    provider: anthropic
+    model: claude-opus-4-6
+    api_key_env: ANTHROPIC_API_KEY
+    base_url: https://api.anthropic.com
+    max_tokens: 40000
+    temperature: 0

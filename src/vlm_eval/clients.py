@@ -66,7 +66,7 @@ class AnthropicClient:
     model: str
     api_key: str
     base_url: str = "https://api.anthropic.com"
-    max_tokens: int = 1024
+    max_tokens: int = 4096
     temperature: float = 0.0
 
     def transcribe(self, image_path: str, prompt: str) -> str:
