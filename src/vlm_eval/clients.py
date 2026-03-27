@@ -104,8 +104,8 @@ class GeminiClient:
     name: str
     model: str
     api_key: str
+    max_tokens: int
     base_url: str = "https://generativelanguage.googleapis.com/v1beta"
-    max_tokens: int = 2048
     temperature: float = 0.0
 
     def transcribe(self, image_path: str, prompt: str) -> str:
@@ -128,7 +128,7 @@ class GeminiClient:
             config=types.GenerateContentConfig(
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal"),
+                thinking_config=types.ThinkingConfig(thinking_level="low"),
             ),
         )
 
