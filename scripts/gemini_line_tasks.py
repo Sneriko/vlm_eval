@@ -83,7 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--model",
-        default="gemini-3.1-pro",
+        default="gemini-3.1-pro-preview",
         help="Gemini model name.",
     )
     parser.add_argument(
