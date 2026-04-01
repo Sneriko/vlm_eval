@@ -85,3 +85,32 @@ Ground truth is extracted from all `TextEquiv/Unicode` nodes, joined by line bre
 ```bash
 pytest
 ```
+
+## Line-level Gemini CER evaluation script
+
+For the `data/line_predictions.csv` format (line image path + TrOCR + ground truth), use:
+
+```bash
+python scripts/gemini_line_tasks.py \
+  --input-csv data/line_predictions.csv \
+  --guidelines-pdf data/tridis.pdf \
+  --output-csv outputs/line_predictions_gemini_tasks.csv \
+  --model gemini-3.1-pro
+```
+
+This runs six tasks per row:
+1. Transcribe from image only.
+2. Correct TrOCR using image + TrOCR text.
+3. Correct TrOCR using TrOCR text only.
+4. Correct TrOCR using TrOCR text + `tridis.pdf` guidelines.
+5. Correct TrOCR using image + TrOCR text + `tridis.pdf` guidelines.
+6. Transcribe from image + `tridis.pdf` guidelines.
+
+The output CSV keeps all original columns and appends:
+- `gemini_task{1..6}_transcription`
+- `gemini_task{1..6}_cer` (per-line CER)
+- A final `__SUMMARY__` row with `gemini_task{1..6}_dataset_cer`.
+
+Notes:
+- Set `GEMINI_API_KEY` (or use `--api-key-env`).
+- If image paths in the CSV are absolute paths from another machine, use `--image-path-prefix` with a local folder containing the cropped line images.
