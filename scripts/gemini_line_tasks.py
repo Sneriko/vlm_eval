@@ -178,8 +178,9 @@ def task_prompts(trocr_text: str) -> dict[str, str]:
             f"OCR transcription: {trocr_text}"
         ),
         "task4": (
-            "Correct the following OCR transcription without seeing the image. "
-            "Follow the attached transcription guidelines PDF. "
+            "You will receive an OCR transcription and a transcription-guidelines PDF. "
+            "Correct the OCR transcription without seeing the image, strictly following "
+            "the attached PDF guidelines. "
             "Return only the corrected transcription.\n"
             f"OCR transcription: {trocr_text}"
         ),
@@ -190,8 +191,9 @@ def task_prompts(trocr_text: str) -> dict[str, str]:
             f"OCR transcription: {trocr_text}"
         ),
         "task6": (
-            "Transcribe the handwritten line image using the attached transcription "
-            "guidelines PDF. Return only the transcription."
+            "You will receive a handwritten line image and a transcription-guidelines PDF. "
+            "Use the PDF as transcription guidelines while reading the image. "
+            "Return only the transcription."
         ),
     }
 
@@ -222,6 +224,7 @@ def main() -> None:
         rows = rows[: args.limit]
 
     task_accumulators = {f"task{i}": CerAccumulator() for i in range(1, 7)}
+    trocr_accumulator = CerAccumulator()
     output_rows: list[dict[str, str]] = []
 
     for idx, row in enumerate(rows, start=1):
@@ -230,6 +233,8 @@ def main() -> None:
         gt = row["ground_truth_transcription"]
         trocr = row["trocr_transcription"]
         prompts = task_prompts(trocr)
+        trocr_cer, trocr_edits, trocr_ref_len = cer(gt, trocr)
+        trocr_accumulator.add(trocr_edits, trocr_ref_len)
 
         task_outputs = {
             "task1": generate_text(client, args.model, [prompts["task1"], image_part]),
@@ -241,6 +246,7 @@ def main() -> None:
         }
 
         out_row = dict(row)
+        out_row["trocr_cer"] = f"{trocr_cer:.6f}"
         for task_name, transcription in task_outputs.items():
             task_cer, edits, ref_len = cer(gt, transcription)
             out_row[f"gemini_{task_name}_transcription"] = transcription
@@ -253,6 +259,9 @@ def main() -> None:
     fieldnames = list(output_rows[0].keys()) if output_rows else []
     summary_row = {key: "" for key in fieldnames}
     summary_row["line_key"] = "__SUMMARY__"
+    summary_row["trocr_dataset_cer"] = f"{trocr_accumulator.cer:.6f}"
+    if "trocr_dataset_cer" not in fieldnames:
+        fieldnames.append("trocr_dataset_cer")
     for task_name, acc in task_accumulators.items():
         summary_key = f"gemini_{task_name}_dataset_cer"
         summary_row[summary_key] = f"{acc.cer:.6f}"
