@@ -106,6 +106,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional row limit for quick trial runs.",
     )
+    parser.add_argument(
+        "--sanity-check",
+        action="store_true",
+        help="Run only the first 10 input rows and write a normal output CSV.",
+    )
     return parser
 
 
@@ -211,6 +216,8 @@ def main() -> None:
         reader = csv.DictReader(infile)
         rows = list(reader)
 
+    if args.sanity_check:
+        rows = rows[:10]
     if args.limit is not None:
         rows = rows[: args.limit]
 
