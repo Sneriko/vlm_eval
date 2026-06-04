@@ -1,6 +1,6 @@
 # vlm-eval
 
-Evaluate proprietary and open Vision Language Models (VLMs) through their APIs on historical Swedish handwriting datasets.
+Evaluate proprietary and open Vision Language Models (VLMs) through APIs or local Hugging Face checkpoints on historical Swedish handwriting datasets.
 
 The project expects each sample to have:
 - A page image (`.jpg`, `.png`, `.tif`, etc.)
@@ -13,13 +13,14 @@ Evaluation metrics implemented:
 
 ## Why this architecture
 
-This implementation uses provider SDKs directly for OpenAI-compatible endpoints, Anthropic, Gemini, and DeepSeek rather than an abstraction layer like LangChain. That keeps the evaluation path transparent while still using the vendors' maintained clients.
+This implementation uses provider SDKs directly for OpenAI-compatible endpoints, Anthropic, Gemini, and DeepSeek, and uses Transformers directly for local Hugging Face VLM checkpoints, rather than an abstraction layer like LangChain. That keeps the evaluation path transparent while still using the vendors' and Hugging Face's maintained clients.
 
 Supported providers out of the box:
 - `openai_compatible` (OpenAI and compatible hosted/self-hosted APIs)
 - `anthropic`
 - `gemini`
 - `deepseek`
+- `huggingface` (local/open LVLM checkpoints via `transformers`, for example Gemma 3 and Qwen2.5-VL)
 
 ## Install
 
@@ -27,6 +28,12 @@ Supported providers out of the box:
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .[dev]
+```
+
+To evaluate local Hugging Face LVLM checkpoints, install the optional Transformers stack:
+
+```bash
+pip install -e .[dev,huggingface]
 ```
 
 ## Dataset layout
@@ -63,7 +70,41 @@ export ANTHROPIC_API_KEY=...
 export GEMINI_API_KEY=...
 export DEEPSEEK_API_KEY=...
 export LOCAL_VLM_API_KEY=dummy
+export HF_TOKEN=...  # optional, for gated/private Hugging Face models such as Gemma
 ```
+
+
+### Hugging Face open LVLMs
+
+Use `provider: huggingface` to load a local Transformers checkpoint directly from Hugging Face. Public models can omit `api_key_env`; gated or private models can set `api_key_env: HF_TOKEN`. Generation uses the repo prompt plus the page image as a multimodal chat message.
+
+Examples:
+
+```yaml
+models:
+  - name: qwen2.5-vl-3b
+    provider: huggingface
+    model: Qwen/Qwen2.5-VL-3B-Instruct
+    max_tokens: 2048
+    temperature: 0
+    device_map: auto
+    torch_dtype: bfloat16
+
+  - name: gemma-3-4b
+    provider: huggingface
+    model: google/gemma-3-4b-it
+    api_key_env: HF_TOKEN
+    max_tokens: 2048
+    temperature: 0
+    device_map: auto
+    torch_dtype: bfloat16
+```
+
+Optional Hugging Face settings:
+- `device_map`: passed to `from_pretrained` (defaults to `auto`). Use `cpu` for CPU-only smoke tests.
+- `torch_dtype`: passed to `from_pretrained` (defaults to `auto`). Common GPU values are `bfloat16` or `float16`.
+- `trust_remote_code`: defaults to `false`; set only for checkpoints that require custom model code.
+- `model_kwargs`: extra keyword arguments forwarded to the model `from_pretrained` call, for example `attn_implementation: sdpa`.
 
 ## Run evaluation
 

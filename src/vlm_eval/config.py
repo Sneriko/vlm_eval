@@ -2,18 +2,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 
 @dataclass
 class ModelConfig:
     name: str
-    provider: Literal["openai_compatible", "anthropic", "gemini", "deepseek"]
+    provider: Literal["openai_compatible", "anthropic", "gemini", "deepseek", "huggingface"]
     model: str
-    api_key_env: str
+    api_key_env: str | None = None
     base_url: str | None = None
     max_tokens: int = 1024
     temperature: float = 0.0
+    device_map: str | None = None
+    torch_dtype: str | None = None
+    trust_remote_code: bool = False
+    model_kwargs: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -29,7 +33,7 @@ class EvalConfig:
     models: list[ModelConfig] = field(default_factory=list)
 
 
-SUPPORTED_PROVIDERS = {"openai_compatible", "anthropic", "gemini", "deepseek"}
+SUPPORTED_PROVIDERS = {"openai_compatible", "anthropic", "gemini", "deepseek", "huggingface"}
 
 
 def _load_model_config(raw_model: dict) -> ModelConfig:
@@ -41,10 +45,14 @@ def _load_model_config(raw_model: dict) -> ModelConfig:
         name=raw_model["name"],
         provider=provider,
         model=raw_model["model"],
-        api_key_env=raw_model["api_key_env"],
+        api_key_env=raw_model.get("api_key_env"),
         base_url=raw_model.get("base_url"),
         max_tokens=int(raw_model.get("max_tokens", 1024)),
         temperature=float(raw_model.get("temperature", 0.0)),
+        device_map=raw_model.get("device_map"),
+        torch_dtype=raw_model.get("torch_dtype"),
+        trust_remote_code=bool(raw_model.get("trust_remote_code", False)),
+        model_kwargs=dict(raw_model.get("model_kwargs", {})),
     )
 
 

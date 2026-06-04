@@ -46,3 +46,23 @@ models:
     base_url: http://localhost:8000/v1
     max_tokens: 2048
     temperature: 0
+
+  # Example for local Hugging Face open LVLMs. Install with:
+  #   pip install -e .[huggingface]
+  - name: qwen2.5-vl-3b-hf
+    provider: huggingface
+    model: Qwen/Qwen2.5-VL-3B-Instruct
+    max_tokens: 2048
+    temperature: 0
+    device_map: auto
+    torch_dtype: bfloat16
+
+  # Gemma checkpoints may require accepting the license and setting HF_TOKEN.
+  - name: gemma-3-4b-hf
+    provider: huggingface
+    model: google/gemma-3-4b-it
+    api_key_env: HF_TOKEN
+    max_tokens: 2048
+    temperature: 0
+    device_map: auto
+    torch_dtype: bfloat16

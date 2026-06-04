@@ -1,7 +1,37 @@
 from pathlib import Path
 
-from vlm_eval.config import EvalConfig, ModelConfig
+from vlm_eval.config import EvalConfig, ModelConfig, load_config
 from vlm_eval.evaluator import EvalRow, evaluate, find_samples, save_csv_per_model, summarize
+
+
+def test_load_config_huggingface_model_options(tmp_path: Path):
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+dataset_dir: ./data
+models:
+  - name: qwen-local
+    provider: huggingface
+    model: Qwen/Qwen2.5-VL-3B-Instruct
+    max_tokens: 256
+    temperature: 0.1
+    device_map: cpu
+    torch_dtype: float32
+    trust_remote_code: true
+    model_kwargs:
+      attn_implementation: sdpa
+""",
+        encoding="utf-8",
+    )
+
+    cfg = load_config(config_path)
+
+    assert cfg.models[0].provider == "huggingface"
+    assert cfg.models[0].api_key_env is None
+    assert cfg.models[0].device_map == "cpu"
+    assert cfg.models[0].torch_dtype == "float32"
+    assert cfg.models[0].trust_remote_code is True
+    assert cfg.models[0].model_kwargs == {"attn_implementation": "sdpa"}
 
 
 def test_find_samples_only_pairs_pagexml_with_archive_image(tmp_path: Path):
