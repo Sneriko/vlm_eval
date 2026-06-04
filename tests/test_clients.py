@@ -1,4 +1,4 @@
-from vlm_eval.clients import AnthropicClient, DeepSeekClient, GeminiClient, OpenAICompatibleClient, build_client
+from vlm_eval.clients import AnthropicClient, DeepSeekClient, GeminiClient, HuggingFaceClient, OpenAICompatibleClient, build_client
 from vlm_eval.config import ModelConfig
 
 
@@ -60,6 +60,44 @@ def test_build_client_deepseek(monkeypatch):
 
     assert isinstance(client, DeepSeekClient)
     assert client.base_url == "https://api.deepseek.com/v1"
+
+
+def test_build_client_huggingface_without_token(monkeypatch):
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+    cfg = ModelConfig(
+        name="qwen-local",
+        provider="huggingface",
+        model="Qwen/Qwen2.5-VL-3B-Instruct",
+        max_tokens=128,
+        device_map="cpu",
+        torch_dtype="float32",
+    )
+
+    client = build_client(cfg)
+
+    assert isinstance(client, HuggingFaceClient)
+    assert client.api_key is None
+    assert client.device_map == "cpu"
+    assert client.torch_dtype == "float32"
+
+
+def test_build_client_huggingface_with_token(monkeypatch):
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    cfg = ModelConfig(
+        name="gemma-local",
+        provider="huggingface",
+        model="google/gemma-3-4b-it",
+        api_key_env="HF_TOKEN",
+        trust_remote_code=True,
+        model_kwargs={"attn_implementation": "sdpa"},
+    )
+
+    client = build_client(cfg)
+
+    assert isinstance(client, HuggingFaceClient)
+    assert client.api_key == "test-token"
+    assert client.trust_remote_code is True
+    assert client.model_kwargs == {"attn_implementation": "sdpa"}
 
 
 def test_build_client_requires_key(monkeypatch):
